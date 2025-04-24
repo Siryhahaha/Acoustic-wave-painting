@@ -10,6 +10,7 @@ while cap.isOpened():
     if not success:
         continue
     cv2.imshow("Cap", image)
+
     key = cv2.waitKey(5) & 0xFF
     if key == 27:  # 按 ESC 退出
         break
