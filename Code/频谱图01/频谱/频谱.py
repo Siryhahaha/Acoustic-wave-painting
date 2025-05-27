@@ -5,57 +5,57 @@ from scipy.io import wavfile
 from scipy.signal import stft
 import warnings
 
-# Ä¬ÈÏ²ÎÊýÉèÖÃ
-input_wav = r'D:\CUDA\123.wav'
-output_img = r'D:\CUDA\spectrogram.png'  # ¸ÄÎªPNG¸ñÊ½
-nperseg = 1024   # Ìá¸ßÆµÂÊ·Ö±æÂÊ
-noverlap = 512   # 50%ÖØµþ
-cmap = 'plasma'  # ÑÕÉ«·½°¸
-dpi = 150        # ½Ï¸ß·Ö±æÂÊ
+# Ä¬ï¿½Ï²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+input_wav = r'D:\Study\å¤§äºŒä¸‹\ä¿¡å·ç³»ç»Ÿè¯¾è®¾\Acoustic-wave-painting\Code\é¢‘è°±å›¾01\input_44k.wav'
+output_img = r'D:\Study\å¤§äºŒä¸‹\ä¿¡å·ç³»ç»Ÿè¯¾è®¾\Acoustic-wave-painting\Code\é¢‘è°±å›¾01\haha.png'  # ï¿½ï¿½ÎªPNGï¿½ï¿½Ê½
+nperseg = 1024   # ï¿½ï¿½ï¿½Æµï¿½Ê·Ö±ï¿½ï¿½ï¿½
+noverlap = 512   # 50%ï¿½Øµï¿½
+cmap = 'plasma'  # ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
+dpi = 150        # ï¿½Ï¸ß·Ö±ï¿½ï¿½ï¿½
 
 def generate_spectrogram(input_wav, output_img, nperseg=1024, noverlap=512, cmap='plasma', dpi=150):
     #
-    #Éú³É²¢±£´æÆµÆ×Í¼
+    #ï¿½ï¿½ï¿½É²ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½Í¼
     #
-    #²ÎÊý£º
-   #     input_wav: ÊäÈëÒôÆµÂ·¾¶ (.wav)
-    #    output_img: Êä³öÍ¼ÏñÂ·¾¶ (Ö§³Öpng/jpgµÈ)
-    #    nperseg: FFT´°¿Ú³¤¶È (Ä¬ÈÏ1024)
-    #    noverlap: ´°¿ÚÖØµþ³¤¶È (Ä¬ÈÏ512)
-    #    cmap: ÑÕÉ«Ó³Éä (Ä¬ÈÏ'plasma')
-    #    dpi: Êä³ö·Ö±æÂÊ (Ä¬ÈÏ150)
+    #ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+   #     input_wav: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÂ·ï¿½ï¿½ (.wav)
+    #    output_img: ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Â·ï¿½ï¿½ (Ö§ï¿½ï¿½png/jpgï¿½ï¿½)
+    #    nperseg: FFTï¿½ï¿½ï¿½Ú³ï¿½ï¿½ï¿½ (Ä¬ï¿½ï¿½1024)
+    #    noverlap: ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ (Ä¬ï¿½ï¿½512)
+    #    cmap: ï¿½ï¿½É«Ó³ï¿½ï¿½ (Ä¬ï¿½ï¿½'plasma')
+    #    dpi: ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ (Ä¬ï¿½ï¿½150)
     #
     try:
-        # ºöÂÔWAVÎÄ¼þµÄÐ¡¾¯¸æ
+        # ï¿½ï¿½ï¿½ï¿½WAVï¿½Ä¼ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             
-            # 1. ¶ÁÈ¡ÒôÆµ
+            # 1. ï¿½ï¿½È¡ï¿½ï¿½Æµ
             sample_rate, data = wavfile.read(input_wav)
-            if data.ndim > 1:  # ×ªÎªµ¥ÉùµÀ
+            if data.ndim > 1:  # ×ªÎªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 data = data.mean(axis=1)
-            data = data.astype(np.float32) / np.iinfo(data.dtype).max  # ¹éÒ»»¯µ½[-1,1]
+            data = data.astype(np.float32) / np.iinfo(data.dtype).max  # ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½[-1,1]
 
-        # 2. ¼ÆËãSTFT
+        # 2. ï¿½ï¿½ï¿½ï¿½STFT
         f, t, Zxx = stft(data, 
                          fs=sample_rate, 
                          nperseg=nperseg, 
                          noverlap=noverlap,
                          window='hann')
-        spectrogram = 20 * np.log10(np.abs(Zxx) + 1e-9)  # ×ª·Ö±´
+        spectrogram = 20 * np.log10(np.abs(Zxx) + 1e-9)  # ×ªï¿½Ö±ï¿½
 
-        # 3. »æÖÆ²¢±£´æ
+        # 3. ï¿½ï¿½ï¿½Æ²ï¿½ï¿½ï¿½ï¿½ï¿½
         plt.figure(figsize=(10, 6))
         plt.pcolormesh(t, f, spectrogram, shading='gouraud', cmap=cmap)
-        plt.yscale('symlog')  # ¶ÔÊýÆµÂÊÖá
-        plt.ylim(20, sample_rate/2)  # ºöÂÔÖ±Á÷ºÍ³¬¸ßÆµ
+        plt.yscale('symlog')  # ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½
+        plt.ylim(20, sample_rate/2)  # ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½Í³ï¿½ï¿½ï¿½Æµ
         plt.colorbar(label='Intensity (dB)')
         plt.title('Spectrogram')
         plt.xlabel('Time (s)')
         plt.ylabel('Frequency (Hz)')
         plt.tight_layout()
 
-        # 4. ±£´æÎªPNG£¨»òÆäËûÖ§³ÖµÄ¸ñÊ½£©
+        # 4. ï¿½ï¿½ï¿½ï¿½ÎªPNGï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ÖµÄ¸ï¿½Ê½ï¿½ï¿½
         plt.savefig(output_img, dpi=dpi, bbox_inches='tight')
         plt.close()
         print(f"Spectrogram successfully saved to {output_img}")
@@ -64,6 +64,6 @@ def generate_spectrogram(input_wav, output_img, nperseg=1024, noverlap=512, cmap
         print(f"Error generating spectrogram: {str(e)}")
         raise
 
-# µ÷ÓÃº¯Êý
+# ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½
 if __name__ == "__main__":
     generate_spectrogram(input_wav, output_img, nperseg, noverlap, cmap, dpi)
