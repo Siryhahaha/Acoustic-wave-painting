@@ -4,18 +4,18 @@ from scipy.io import wavfile
 from scipy.signal import stft
 
 input_wav = 'input_44k.wav',
-output_bmp = 'spectrogram.bmp',
+output_png = 'spectrogram.png',
 nperseg = 1024,  # 提高频率分辨率
 noverlap = 512,  # 50%重叠
 cmap = 'plasma',  # 颜色方案
 dpi = 150  # 较高分辨率
 
 
-def generate_spectrogram(input_wav, output_bmp, nperseg=256, noverlap=128, cmap='viridis', dpi=100):
-    # 生成并保存频谱图为 BMP 格式
+def generate_spectrogram(input_wav, output_png, nperseg=256, noverlap=128, cmap='viridis', dpi=100):
+    # 生成并保存频谱图为 png 格式
     # 参数：
     #   input_wav: 输入音频路径 (.wav)
-    #   output_bmp: 输出图像路径 (.bmp)
+    #   output_png: 输出图像路径 (.png)
     #  nperseg: FFT窗口长度 (默认256)
     # noverlap: 窗口重叠长度 (默认128)
     # cmap: 颜色映射 (默认'viridis')
@@ -25,7 +25,7 @@ def generate_spectrogram(input_wav, output_bmp, nperseg=256, noverlap=128, cmap=
     sample_rate, data = wavfile.read(input_wav)
     if data.ndim > 1:  # 转为单声道
         data = data.mean(axis=1)
-    data = data.astype(np.float32) / np.iinfo(data.dtype).max  # 归一化到[-1,1]
+    data = data.astype(np.float32) / np.max(np.abs(data))  # 归一化到[-1,1]
 
     # 2. 计算STFT
     f, t, Zxx = stft(data,
@@ -45,9 +45,9 @@ def generate_spectrogram(input_wav, output_bmp, nperseg=256, noverlap=128, cmap=
     plt.ylabel('Frequency (Hz)')
     plt.tight_layout()
 
-    # 4. 保存为BMP（或PNG/JPEG）
-    plt.savefig(output_bmp, dpi=dpi, bbox_inches='tight', format='bmp')
+    # 4. 保存为png（或PNG/JPEG）
+    plt.savefig(output_png, dpi=dpi, bbox_inches='tight', format='png')
     plt.close()
 
 if __name__ == "__main__":
-    generate_spectrogram('input_44k.wav','spectrogram.bmp')
+    generate_spectrogram('input_44k.wav','spectrogram.png')

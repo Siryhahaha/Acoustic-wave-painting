@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 """
 
 wavPath="music02.wav"
-binPath="S2.bin"
+binPath="S02.bin"
 
 def save_audio(wav_path=wavPath, bin_path=binPath):
     #读取WAV文件并保存为二进制
