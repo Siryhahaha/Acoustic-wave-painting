@@ -1,29 +1,35 @@
 import numpy as np
-import scipy.io.wavfile as wav#这里略微改动了函数
+import scipy.io.wavfile as wav  #这里略微改动了函数
 import matplotlib.pyplot as plt
 from scipy.signal import stft
 
+"""
+本文件植入了🐎的函数,三个函数分别是:
+根据wav031生成bin03,根据bin03生成wav032(理论上和wav031是一样的),使用马的代码读取wav032然后生成图片
+核心是第二三个函数,我把第一个函数注释了
+"""
+
 # 参数配置
-wavPath = "music03.wav"
+wav1Path = "music03_1.wav"
+wav2Path = "music03_2.wav"
 binPath = "S03.bin"
 imgPath = 'P03.png'
-spectrogram_params = {
-    'nperseg': 1024,
-    'noverlap': 512,
-    'cmap': 'plasma',
-    'dpi': 150
-}
+#其他没用到的参数删了
 
-
-def save_audio(wav_path=wavPath, bin_path=binPath):
-    """读取并保存音频数据"""
-    rate, data = wav.read(wav_path)  # 使用wavfile保持一致性
+def save_audio(wav_path=wav1Path, bin_path=binPath):
+    #读取并保存音频数据
+    rate, data = wav.read(wav_path)
     if data.ndim > 1:
         data = data[:, 0]
     data = data.astype(np.float32) / np.max(np.abs(data))
     data.tofile(bin_path)
     return rate, data
 
+def load_and_plot(rate, bin_path=binPath):
+    #加载二进制文件到wav2
+    audio = np.fromfile(bin_path, dtype=np.float32)
+    audio_int = (audio * 32767).astype(np.int16)
+    wav.write(wav2Path, rate, audio_int)
 
 def generate_spectrogram(input_wav, output_png, nperseg=256, noverlap=128, cmap='viridis', dpi=100):
     """
@@ -60,19 +66,13 @@ def generate_spectrogram(input_wav, output_png, nperseg=256, noverlap=128, cmap=
     plt.xlabel('Time (s)')
     plt.ylabel('Frequency (Hz)')
     plt.tight_layout()
-
-    # 4. 保存为PNG
+    plt.show()
     plt.savefig(output_png, dpi=dpi, bbox_inches='tight', format='png')
     plt.close()
 
 
 if __name__ == "__main__":
-    sample_rate, _ = save_audio()
-    generate_spectrogram(
-        input_wav=wavPath,
-        output_png=imgPath,  # 参数名对齐
-        nperseg=spectrogram_params['nperseg'],
-        noverlap=spectrogram_params['noverlap'],
-        cmap=spectrogram_params['cmap'],
-        dpi=spectrogram_params['dpi']
-    )
+    sample_rate = 441000
+    # sample_rate, audio_data = save_audio()    #本句可注释
+    load_and_plot(sample_rate, binPath)
+    generate_spectrogram(input_wav=wav2Path,output_png=imgPath)

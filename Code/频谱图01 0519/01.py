@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import stft
 
-input_wav = 'input_44k.wav',
-output_png = 'spectrogram.png',
+input_wav = 'input_44k.wav'
+output_png = 'spectrogram.png'
 nperseg = 1024,  # 提高频率分辨率
 noverlap = 512,  # 50%重叠
 cmap = 'plasma',  # 颜色方案
