@@ -73,6 +73,6 @@ def generate_spectrogram(input_wav, output_png, nperseg=256, noverlap=128, cmap=
 
 if __name__ == "__main__":
     sample_rate = 441000
-    # sample_rate, audio_data = save_audio()    #本句可注释
+    sample_rate, audio_data = save_audio()    #本句可注释
     load_and_plot(sample_rate, binPath)
     generate_spectrogram(input_wav=wav2Path,output_png=imgPath)

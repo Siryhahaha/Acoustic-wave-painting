@@ -19,6 +19,7 @@ def save_audio(wav_path=wavPath, bin_path=binPath):
 
 def load_and_plot(bin_path=binPath, show_samples=1000):
     #加载二进制文件并绘制波形
+    sample_rate = 44100
     audio = np.fromfile(bin_path, dtype=np.float32)
     plt.figure(figsize=(10, 4))
     time = np.arange(show_samples) / sample_rate  # 转换为秒

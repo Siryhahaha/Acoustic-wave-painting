@@ -11,15 +11,11 @@ import matplotlib
 import scipy.signal as signal
  
 import math
- 
- 
- 
+
 #码元数
  
 size = 10
- 
 sampling_t = 0.01
- 
 t = np.arange(0, size, sampling_t)
  
  
@@ -115,13 +111,9 @@ plt.plot(t, noise_bpsk, 'r')
  
  
 # 带通椭圆滤波器设计，通带为[2000，6000]
- 
 [b11,a11] = signal.ellip(5, 0.5, 60, [2000 * 2 / 80000, 6000 * 2 / 80000], btype = 'bandpass', analog = False, output = 'ba')
  
- 
- 
-# 低通滤波器设计，通带截止频率为2000Hz
- 
+ # 低通滤波器设计，通带截止频率为2000Hz
 [b12,a12] = signal.ellip(5, 0.5, 60, (2000 * 2 / 80000), btype = 'lowpass', analog = False, output = 'ba')
  
  

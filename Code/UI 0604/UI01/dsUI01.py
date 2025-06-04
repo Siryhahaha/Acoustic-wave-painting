@@ -8,8 +8,6 @@ from tkinter import messagebox as box
 def main():
     # 1. 创建主窗口 - Tk() 是 tkinter 的主窗口类
     root = tk.Tk()
-
-    #标题大小
     root.title("声波绘影")
     root.geometry("300x200")
 

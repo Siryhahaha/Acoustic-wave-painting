@@ -12,7 +12,7 @@
 
 主窗口：root = tk.TK()，需要有title和geometry（宽高）
 
-文本：lable，要有文本和字体大小
+文本：label，要有文本和字体大小
 
 按键：button，要有command（执行的函数）
 
