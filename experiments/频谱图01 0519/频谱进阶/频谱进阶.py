@@ -8,10 +8,23 @@ from scipy.signal import stft  # 短时傅里叶变换，用于频谱分析
 import warnings  # Python内置警告模块，处理可能出现的警告信息
 
 # === 默认参数设置 ===
-input_wav = r'D:\CUDA\ceshi.wav'  # 默认音频文件路径
+input_wav = 'yinpin\ceshi.wav'  # 默认音频文件路径
 nperseg = 1024  # FFT窗口长度（采样点数），影响频率分辨率和时间分辨率
 noverlap = 512   # FFT窗口重叠长度（采样点数），减少频谱边界效应，提高时间连续性
 dpi = 150         # 输出图像分辨率（每英寸点数），数值越高图像越清晰
+
+# 添加获取音频时长的函数
+def get_audio_duration(input_wav):
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            sample_rate, data = wavfile.read(input_wav)
+            if data.ndim > 1: 
+                data = data.mean(axis=1)
+            return len(data) / float(sample_rate)
+    except Exception as e:
+        print(f"error: {str(e)}")
+        return None
 
 def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512, dpi=150):
     
@@ -55,7 +68,7 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         f, t, Zxx = stft(
             data,               # 预处理后的音频数据
             fs=sample_rate,     # 音频采样率(Hz)
-            nperseg=nperseg,    # FFT窗口长度(点数)
+            nperseg=nperseg,    # STFT窗口长度(点数)
             noverlap=noverlap,  # 窗口重叠点数
             window='hann'       # 汉宁窗函数，减少频谱泄漏
         )
@@ -97,7 +110,7 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         ax.set_ylim(0, np.max(spectrum)*1.1)  
         
         # 添加标签和标题：描述性文本使图表更易读
-        ax.set_title(f'{actual_time:.3f}s:')  # 显示实际时间点
+        # ax.set_title(f'{actual_time:.3f}s:')  # 显示实际时间点
         ax.set_xlabel('f (Hz)')  
         ax.set_ylabel('A')  
         
@@ -130,44 +143,42 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         print(f"error: {str(e)}")
         raise  # 重新抛出异常，便于调试
 
+
 # === 主程序入口 ===
 if __name__ == "__main__":
-    # 定义感兴趣的时间点（单位：秒）
-    target_time = 2.3  # 例如：分析第2.3秒的频谱
-    
-    # 生成频谱图：调用核心函数
-    fig, freq, spectrum = generate_single_spectrum(
-        r'D:\CUDA\ceshi.wav',  # 音频文件路径
-        target_time=target_time,  # 目标时间点
-        nperseg=512,       # FFT窗口长度
-        noverlap=256,      # FFT窗口重叠点数
-        dpi=150            # 图像分辨率
-    )
-    
-    # 保存频谱图：将图表输出为图像文件
-    output_img = r'D:\CUDA\spectrum_at_time.png'  # 输出路径
-    fig.savefig(output_img, bbox_inches='tight')  # 紧凑布局保存
-    plt.close(fig)  # 关闭图表，释放内存
-    print(f"saved to: {output_img}")
-    
-    # === 可选频谱分析示例 ===
-    
-    # 1. 找主峰频率（最高幅度对应的频率）
-    peak_freq_idx = np.argmax(spectrum)  # 找到最大幅度对应的索引
-    peak_freq = freq[peak_freq_idx]  # 从频率数组获取对应频率
-    print(f"f: {peak_freq:.1f} Hz")
-    
-    # 2. 分析特定频率范围的频谱能量（例如人声范围）
-    vocal_range = (85, 255)  # 人声主要频率范围(男声基频)
-    # 筛选出指定频率范围内的频谱点
-    in_range = spectrum[(freq >= vocal_range[0]) & (freq <= vocal_range[1])]
-    vocal_energy = np.mean(in_range)  # 计算平均值作为能量指标
-    print(f"pingjunenergy: {vocal_energy:.4f}")
-    
-    # 3. 能量比例计算（例如高音部分占总能量比例）
-    total_energy = np.sum(spectrum)  # 总能量
-    high_freq_range = (2000, sample_rate/2)  # 高音频率范围(2kHz以上)
-    # 筛选高音区频谱点
-    high_freq_energy = np.sum(spectrum[(freq >= high_freq_range[0])])
-    high_freq_ratio = high_freq_energy / total_energy * 100  # 百分比
-    print(f"gaoyinzhanbi: {high_freq_ratio:.1f}%")
+    # 获取音频总时长
+    duration = get_audio_duration(input_wav)
+    if duration is None:
+        print("error")
+        exit(1) 
+    print(f"total length: {duration:.2f} s")   
+    # 设置采样间隔
+    interval = 0.5    
+    # 计算需要生成的频谱图数量
+    num_spectra = int(duration / interval)    
+    # 循环生成频谱图
+    for i in range(num_spectra + 1):
+        target_time = i * interval        
+        # 避免超出音频时长
+        if target_time > duration:
+            break          
+        # 生成频谱图
+        fig, freq, spectrum = generate_single_spectrum(
+            input_wav,
+            target_time=target_time,
+            nperseg=nperseg,
+            noverlap=noverlap,
+            dpi=dpi
+        )       
+        # 设置图表标题
+        fig.suptitle(f"t: {target_time:.2f}s  (total_t: {duration:.2f}s)", fontsize=12)        
+        # 显示图片
+        plt.show()      
+        # 关闭当前图片后才继续
+        plt.close(fig)    
+        
+        # 可选：保存频谱图
+        # output_img = f'tupian/spectrum_{i:03d}_{target_time:.1f}s.png'
+        # fig.savefig(output_img, bbox_inches='tight')
+        # print(f"已保存: {output_img}")   
+    print(f"all {num_spectra} ")
