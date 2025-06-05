@@ -22,28 +22,26 @@ def select_wav():
 def play_audio():
     """播放音频"""
     if not wav_path:
-        messagebox.showwarning("提示+", "请先选择WAV文件好吗")
+        messagebox.showwarning("提示", "请先选择WAV文件好吗")
         return
     os.startfile(wav_path)
 
 def select_save_dir():
     """选择保存目录"""
-    global save_dir
+    global saveDir_path
     dir = filedialog.askdirectory(title="选择保存路径")
     if dir:
-        save_dir = dir
+        saveDir_path = dir
         save_label.config(text=f"保存到: {dir}")
         info_label.config(text=f"保存路径: {dir}")
 
 def save_results():
     """保存结果"""
-    if not save_dir:
-        messagebox.showwarning("提示", "请先选择保存路径")
+    if not saveDir_path:
+        messagebox.showwarning("提示", "请先选择保存路径好吗")
         return
     try:
-        # 实际保存逻辑在此添加
-        with open(os.path.join(save_dir, "results.txt"), "w") as f:
-            f.write(f"声波绘影保存结果 - {time.strftime('%Y%m%d')}")
+        ##############################在此保存
         messagebox.showinfo("成功", "文件已保存")
         info_label.config(text=f"保存完成!")
     except:
@@ -51,9 +49,8 @@ def save_results():
 
 def execute_function():
     """执行功能"""
-    # 实际功能执行在此添加
     info_label.config(text="处理中...")
-    time.sleep(1)  # 模拟耗时操作
+    ###############################这里进行主要工作
     info_label.config(text="处理完成")
     messagebox.showinfo("完成", "功能执行完毕")
 
@@ -62,6 +59,7 @@ def update_display():
     disp_type = display_type.get()
     if disp_type == "图片":
         try:
+            ###########这里改图片
             img = Image.open("output.png")
             img = img.resize((300, 200), Image.LANCZOS)
             photo = ImageTk.PhotoImage(img)
@@ -72,9 +70,10 @@ def update_display():
     else:
         display_label.config(image="", text="视频功能暂未实现")
 
+
 # 创建主窗口
 root = tk.Tk()
-root.title("声波绘影系统")
+root.title("声波绘影——音频可视化链路系统")
 root.geometry("700x450")
 
 # 顶部栏
@@ -84,7 +83,7 @@ top_frame.pack(fill=tk.X, padx=10, pady=5)
 tk.Label(top_frame, text="欢迎使用声波绘影系统",
          font=("微软雅黑", 12, "bold")).pack(side=tk.LEFT)
 
-time_label = tk.Label(top_frame, text=time.strftime("%Y-%m-%d %H:%M"))
+time_label = tk.Label(top_frame, text=time.strftime("%Y-%m-%d %H:%M:%S"))
 time_label.pack(side=tk.RIGHT)
 
 # 主内容区域
@@ -147,8 +146,8 @@ info_label.pack(fill=tk.X, pady=5)
 
 # 时间更新
 def update_time():
-    time_label.config(text=time.strftime("%Y-%m-%d %H:%M"))
-    root.after(60000, update_time)  # 每分钟更新一次
+    time_label.config(text=time.strftime("%Y-%m-%d %H:%M:%S"))
+    root.after(1000, update_time)
 
 # 初始显示
 update_time()
