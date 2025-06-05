@@ -1,30 +1,31 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent))
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import os
 import time
 from PIL import Image, ImageTk
-
-from lib.constants import *
-
+from lib import *
 
 def select_wav():
     """选择音频文件"""
-    global wav_path
+    global wavInput_path
     file = filedialog.askopenfilename(
         title="选择WAV文件",
         filetypes=(("WAV文件", "*.wav"),)
     )
     if file:
-        wav_path = file
+        wavInput_path = file
         file_label.config(text=os.path.basename(file))
         info_label.config(text=f"已选择: {os.path.basename(file)}")
 
 def play_audio():
     """播放音频"""
-    if not wav_path:
+    if wavInput_path == "":
         messagebox.showwarning("提示", "请先选择WAV文件好吗")
         return
-    os.startfile(wav_path)
+    os.startfile(wavInput_path)
 
 def select_save_dir():
     """选择保存目录"""
@@ -37,11 +38,11 @@ def select_save_dir():
 
 def save_results():
     """保存结果"""
-    if not saveDir_path:
+    if saveDir_path == "":
         messagebox.showwarning("提示", "请先选择保存路径好吗")
         return
     try:
-        ##############################在此保存
+        dir_copy("workspace", saveDir_path)
         messagebox.showinfo("成功", "文件已保存")
         info_label.config(text=f"保存完成!")
     except:
@@ -60,7 +61,7 @@ def update_display():
     if disp_type == "图片":
         try:
             ###########这里改图片
-            img = Image.open("output.png")
+            img = Image.open(pngBpsk_path)
             img = img.resize((300, 200), Image.LANCZOS)
             photo = ImageTk.PhotoImage(img)
             display_label.config(image=photo)
@@ -152,6 +153,9 @@ def update_time():
 # 初始显示
 update_time()
 root.after(100, lambda: info_label.config(text="请选择音频文件开始"))
-root.after(200, update_display)  # 稍后加载显示
+root.after(200, update_display)
 
 root.mainloop()
+
+#############这里清空初始化
+# workspace_init()
