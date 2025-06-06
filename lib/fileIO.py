@@ -1,10 +1,4 @@
-import numpy as np
-import cv2
-import os
-import shutil
-import scipy.io.wavfile as wav
 from .constants import *
-import natsort
 
 #这里读写文件，包括读wav、读bin、bin-wav转换、读写png、png转mp4
 #文件的复制清除，工作区的初始化
@@ -59,12 +53,13 @@ def workspace_init():
     file_clear(binBpsk_path)
     file_clear(binDebpsk_path)
     file_clear(pngBpsk_path)
+    file_clear(mp4Silent_path)
     file_clear(mp4Output_path)
     file_clear(wavOutput_path)
     dir_clear(pngTempDir_path)
 
 
-def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Output_path, fps=30):
+def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Silent_path, fps=30):
     """"""
     # 验证文件夹存在
     if not os.path.exists(image_folder):
@@ -109,3 +104,17 @@ def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Output_path, fps=30):
     out.release()
     print(f"视频已保存至: {output_mp4}")
     print(f"共处理 {len(png_files)} 张图片, 帧率: {fps}fps")
+
+
+def mp4_addWav(mp4_path, wav_path, output_path):
+    """合并音视频（保留原视频编码）"""
+    cmd = [
+        'ffmpeg',
+        '-i', mp4_path,  # 输入视频
+        '-i', wav_path,  # 输入音频
+        '-c:v', 'copy',  # 直接复制视频流（无损）
+        '-c:a', 'aac',  # 音频编码为 AAC
+        '-strict', 'experimental',  # 兼容性参数
+        output_path
+    ]
+    subprocess.run(cmd, check=True)  # check=True 确保命令执行成功

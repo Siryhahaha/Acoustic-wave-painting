@@ -1,14 +1,8 @@
-
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.io import wavfile
-from scipy.signal import stft
-import warnings
-import os
 from .constants import *
 
-input_wav = '..\\experiments\\频谱图01 0519\\频谱进阶\\yinpin\\ceshi.wav'
+# input_wav = '..\\experiments\\频谱图01 0519\\频谱进阶\\yinpin\\ceshi.wav'
 # input_wav = '..\\docs\\wav示例文件\\sample-3s.wav'  # 默认音频文件路径
+# input_wav = wavInput_path
 nperseg = 1024
 noverlap = 512
 dpi = 150
@@ -17,7 +11,7 @@ def get_audio_duration(input_wav):
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            sample_rate, data = wavfile.read(input_wav)
+            sample_rate, data = wav.read(input_wav)
             if data.ndim > 1:
                 data = data.mean(axis=1)
             return len(data) / float(sample_rate)
@@ -25,6 +19,31 @@ def get_audio_duration(input_wav):
         print(f"error: {str(e)}")
         return None
 
+
+# 计算整个音频的最大幅值（增强兼容性）
+def calculate_global_amplitude_max(input_wav, nperseg, noverlap):
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            sample_rate, data = wav.read(input_wav)
+            # 处理多声道
+            if data.ndim > 1:
+                data = data.mean(axis=1)
+                # 执行STFT
+        f, t, Zxx = stft(
+            data,
+            fs=sample_rate,
+            nperseg=nperseg,
+            noverlap=noverlap,
+            window='hann'
+        )
+        # 计算整个频谱的最大幅值
+        global_max = np.max(np.abs(Zxx))
+        print(f"音频最大幅值: {global_max:.4f}")
+        return global_max
+    except Exception as e:
+        print(f"计算全局幅值时出错: {str(e)}")
+        return 1.0  # 返回安全的默认值
 
 def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512, dpi=150):
     # 核心功能：分析音频在指定时间点的频谱特征
@@ -36,9 +55,10 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         # === 1. 音频读取与预处理 ===
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            sample_rate, data = wavfile.read(input_wav)
+            sample_rate, data = wav.read(input_wav)
             if data.ndim > 1:
                 data = data.mean(axis=1)
+            data = data.astype(np.float32)
         f, t, Zxx = stft(
             data,
             fs=sample_rate,
@@ -83,38 +103,42 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         print(f"error: {str(e)}")
         raise
 
+#这里写一个函数，得到总数和采样间隔
+#这里写一个函数，输入数字得到对应时间的图片
+def get_time_num_imterval(wav_path=wavOutput_path, fps=30):
+    duration = get_audio_duration(wav_path)
+    if duration is None:
+        print("error")
+        exit(1)
+    print(f"total length: {duration:.2f} s")
+    # 设置采样间隔
+    interval = 1/fps
+    # 计算需要生成的频谱图数量
+    num_spectra = int(duration / interval)
+    return duration, num_spectra, interval
 
-# # 获取音频总时长
-# duration = get_audio_duration(input_wav)
-# if duration is None:
-#     print("error")
-#     exit(1)
-# print(f"total length: {duration:.2f} s")
-# # 设置采样间隔
-# interval = 0.033333
-# # 计算需要生成的频谱图数量
-# num_spectra = int(duration / interval)
-# # 循环生成频谱图
-# for i in range(num_spectra + 1):
-#     target_time = i * interval
-#     # 避免超出音频时长
-#     if target_time > duration:
-#         break
-#         # 生成频谱图
-#     fig, freq, spectrum = generate_single_spectrum(
-#         input_wav,
-#         target_time=target_time,
-#         nperseg=nperseg,
-#         noverlap=noverlap,
-#         dpi=dpi
-#     )
-#     # 设置图表标题
-#     fig.suptitle(f"t: {target_time:.2f}s  (total_t: {duration:.2f}s)", fontsize=12)
-#     # plt.show()
-#     # plt.close(fig)
-#     # output_img = f'tupian/spectrum_{i:03d}_{target_time:.1f}s.png'
-#     file_name = f"{i + 1:05d}.png"  # 格式化为5位数字，不足前面补零
-#     full_path = pngTempDir_path + "\\" + file_name
-#     plt.savefig(full_path)
-#     # print(f"已保存: {output_img}")
-# print(f"all {num_spectra} ")
+def generate_png(input_wav, duration, interval, i):
+    # 循环生成频谱图
+    # for i in range(num_spectra + 1):
+    target_time = i * interval
+    # 避免超出音频时长
+    if target_time > duration:
+        return
+        # 生成频谱图
+    fig, freq, spectrum = generate_single_spectrum(
+        input_wav,
+        target_time=target_time,
+        nperseg=nperseg,
+        noverlap=noverlap,
+        dpi=dpi
+    )
+    # 设置图表标题
+    fig.suptitle(f"t: {target_time:.2f}s  (total_t: {duration:.2f}s)", fontsize=12)
+    # plt.show()
+    # output_img = f'tupian/spectrum_{i:03d}_{target_time:.1f}s.png'
+    file_name = f"{i + 1:05d}.png"  # 格式化为5位数字，不足前面补零
+    full_path = pngTempDir_path + "\\" + file_name
+    plt.savefig(full_path)
+    plt.close('all')
+        # print(f"已保存: {output_img}")
+    # print(f"all {num_spectra} ")

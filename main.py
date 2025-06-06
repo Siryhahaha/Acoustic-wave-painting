@@ -1,11 +1,3 @@
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent))
-import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
-import os
-import time
-from PIL import Image, ImageTk
 from lib import *
 
 def select_wav():
@@ -42,7 +34,8 @@ def save_results():
         messagebox.showwarning("提示", "请先选择保存路径好吗")
         return
     try:
-        dir_copy("workspace", saveDir_path)
+        # dir_copy("workspace", saveDir_path)
+        shutil.copy(mp4Output_path,saveDir_path)
         messagebox.showinfo("成功", "文件已保存")
         info_label.config(text=f"保存完成!")
     except:
@@ -52,6 +45,13 @@ def execute_function():
     """执行功能"""
     info_label.config(text="处理中...")
     ###############################这里进行主要工作
+    duration, num_spectra, interval =get_time_num_imterval(wavInput_path)
+    for i in range(num_spectra + 1):
+        generate_png(wavInput_path, duration, interval, i)
+        info_label.config(text = f"处理中...{i / num_spectra}")
+    png_mp4()
+    ############这里差一个添加音频
+    mp4_addWav(mp4Silent_path, wavInput_path, mp4Output_path)
     info_label.config(text="处理完成")
     messagebox.showinfo("完成", "功能执行完毕")
 
@@ -69,9 +69,12 @@ def update_display():
         except:
             display_label.config(image="", text="图片加载失败")
     else:
-        display_label.config(image="", text="视频功能暂未实现")
+        try:
+            os.startfile(mp4Output_path)
+        except:
+            display_label.config(image="", text=f"视频加载失败")
 
-
+workspace_init()
 # 创建主窗口
 root = tk.Tk()
 root.title("声波绘影——音频可视化链路系统")
@@ -154,8 +157,7 @@ def update_time():
 update_time()
 root.after(100, lambda: info_label.config(text="请选择音频文件开始"))
 root.after(200, update_display)
-png_mp4(pngTempDir_path)
+# png_mp4(pngTempDir_path)
 root.mainloop()
 
 #############这里清空初始化
-# workspace_init()
