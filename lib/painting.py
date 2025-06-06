@@ -45,7 +45,7 @@ def calculate_global_amplitude_max(input_wav, nperseg, noverlap):
         print(f"计算全局幅值时出错: {str(e)}")
         return 1.0  # 返回安全的默认值
 
-def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512, dpi=150):
+def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512, dpi=150, fps=fps_set):
     # 核心功能：分析音频在指定时间点的频谱特征
     #    fig: 包含频谱图的matplotlib图形对象
     #    freq: 频率数组（各频率点）
@@ -73,19 +73,19 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         actual_time = t[closest_idx]
         print(f"target: {target_time}s , actual: {actual_time:.3f}s")
         # === 4. 创建频谱图表 ===
-        fig = plt.figure(figsize=(10, 6), dpi=dpi)
+        fig = plt.figure(figsize=(10, 7), dpi=dpi)  # 增加高度到7英寸
+        fig.subplots_adjust(hspace=5)
         ax = fig.add_subplot(111)
         ax.plot(f, spectrum, color='blue', linewidth=2)
         ax.set_xscale('log')
         ax.set_xlim(20, sample_rate / 2)
-        # ax.set_ylim(0, np.max(spectrum) * 1.1)
-        ax.set_ylim(0, 5000)
+        ax.set_ylim(0, calculate_global_amplitude_max(input_wav, nperseg, noverlap) * 1.1)
         ax.set_xlabel('f (Hz)')
         ax.set_ylabel('A')
         # ax.grid(True, which='both', linestyle='--', alpha=0.7)
         ax.text(
             0.98, 0.98,
-            f't = {actual_time:.3f}s',
+            f't = {actual_time:.3f}s , fps = {fps}',
             transform=ax.transAxes,
             ha='right',
             va='top',
@@ -97,7 +97,6 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         )
 
         plt.tight_layout()
-        print(f"{actual_time}s:successful")
         return fig, f, spectrum
     except Exception as e:
         print(f"error: {str(e)}")
@@ -105,7 +104,7 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
 
 #这里写一个函数，得到总数和采样间隔
 #这里写一个函数，输入数字得到对应时间的图片
-def get_time_num_imterval(wav_path=wavOutput_path, fps=30):
+def get_time_num_imterval(wav_path=wavOutput_path, fps=fps_set):
     duration = get_audio_duration(wav_path)
     if duration is None:
         print("error")
@@ -117,7 +116,7 @@ def get_time_num_imterval(wav_path=wavOutput_path, fps=30):
     num_spectra = int(duration / interval)
     return duration, num_spectra, interval
 
-def generate_png(input_wav, duration, interval, i):
+def generate_png(input_wav, duration, interval, i, fps=fps_set):
     # 循环生成频谱图
     # for i in range(num_spectra + 1):
     target_time = i * interval
@@ -130,13 +129,15 @@ def generate_png(input_wav, duration, interval, i):
         target_time=target_time,
         nperseg=nperseg,
         noverlap=noverlap,
-        dpi=dpi
+        dpi=dpi,
+        fps=fps
     )
     # 设置图表标题
-    fig.suptitle(f"t: {target_time:.2f}s  (total_t: {duration:.2f}s)", fontsize=12)
-    # plt.show()
-    # output_img = f'tupian/spectrum_{i:03d}_{target_time:.1f}s.png'
-    file_name = f"{i + 1:05d}.png"  # 格式化为5位数字，不足前面补零
+    fig.suptitle(Path(input_wav).stem, fontsize=20)
+    fig.text(0.8, 0.01, "Acoustic-wave-painting  by SY MZH LHJ",
+             ha='center', fontsize=10,
+             bbox=dict(facecolor='white', alpha=0.7))
+    file_name = f"{i + 1:05d}.png"
     full_path = pngTempDir_path + "\\" + file_name
     plt.savefig(full_path)
     plt.close('all')

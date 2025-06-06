@@ -56,10 +56,11 @@ def workspace_init():
     file_clear(mp4Silent_path)
     file_clear(mp4Output_path)
     file_clear(wavOutput_path)
+    os.remove(mp4Output_path)
     dir_clear(pngTempDir_path)
 
 
-def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Silent_path, fps=30):
+def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Silent_path, fps=fps_set):
     """"""
     # 验证文件夹存在
     if not os.path.exists(image_folder):
