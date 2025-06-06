@@ -154,6 +154,7 @@ def update_time():
 update_time()
 root.after(100, lambda: info_label.config(text="请选择音频文件开始"))
 root.after(200, update_display)
+png_mp4(pngTempDir_path)
 root.mainloop()
 
 #############这里清空初始化

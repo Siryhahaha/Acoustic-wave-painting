@@ -3,7 +3,6 @@ import cv2
 import os
 import shutil
 import scipy.io.wavfile as wav
-from tkinter import filedialog, messagebox, ttk
 from .constants import *
 import natsort
 
@@ -65,7 +64,7 @@ def workspace_init():
     dir_clear(pngTempDir_path)
 
 
-def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Output_path, fps=2):
+def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Output_path, fps=30):
     """"""
     # 验证文件夹存在
     if not os.path.exists(image_folder):
