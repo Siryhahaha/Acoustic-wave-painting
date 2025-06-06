@@ -5,6 +5,7 @@ import shutil
 import scipy.io.wavfile as wav
 from tkinter import filedialog, messagebox, ttk
 from .constants import *
+import natsort
 
 #这里读写文件，包括读wav、读bin、bin-wav转换、读写png、png转mp4
 #文件的复制清除，工作区的初始化
@@ -30,27 +31,11 @@ def bin_write(data, bin_path=binBpsk_path):
     data.tofile(bin_path)
 
 def png_read(png_path):
-    img = cv2.imread(png_path, cv2.IMREAD_UNCHANGED)  # 支持透明度
+    img = cv2.imread(png_path, cv2.IMREAD_UNCHANGED)
     return img
 
 def png_write(png, png_path="pngTempDir_path\\0.png"):
     png.tofile(png_path)
-
-def png_mp4(pngDir=pngTempDir_path, mp4_path=mp4Output_path, fps=20):
-    """读png，png-mp4,by ds"""
-    images = [img for img in os.listdir(pngDir) if img.endswith(".png")]
-    images.sort()
-    frame = cv2.imread(os.path.join(pngDir, images[0]))
-    height, width, _ = frame.shape
-
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 编码格式（MP4）
-    video = cv2.VideoWriter(mp4_path, fourcc, fps, (width, height))
-
-    #逐帧写入
-    for image in images:
-        img_path = os.path.join(pngDir, image)
-        frame = cv2.imread(img_path)
-        video.write(frame)
 
 def dir_copy(DirInput_path, DirOutput_path):
     shutil.copytree(DirInput_path, DirOutput_path)
@@ -79,3 +64,49 @@ def workspace_init():
     file_clear(wavOutput_path)
     dir_clear(pngTempDir_path)
 
+
+def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Output_path, fps=2):
+    """"""
+    # 验证文件夹存在
+    if not os.path.exists(image_folder):
+        raise FileNotFoundError(f"图片文件夹不存在: {image_folder}")
+
+    # 获取文件夹中所有PNG文件（自然排序）
+    png_files = [f for f in os.listdir(image_folder) if f.lower().endswith('.png')]
+    if not png_files:
+        raise ValueError(f"文件夹中没有PNG图片: {image_folder}")
+
+    # 按自然顺序排序（考虑数字顺序）
+    png_files = natsort.natsorted(png_files)
+
+    # 获取第一张图片的尺寸
+    first_frame = cv2.imread(os.path.join(image_folder, png_files[0]))
+    if first_frame is None:
+        raise ValueError(f"无法读取第一帧图片: {png_files[0]}")
+
+    height, width, _ = first_frame.shape
+    size = (width, height)
+
+    # 创建视频写入对象
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # MP4编码器
+    out = cv2.VideoWriter(output_mp4, fourcc, fps, size)
+
+    # 处理并写入每帧图片
+    for png_file in png_files:
+        file_path = os.path.join(image_folder, png_file)
+        frame = cv2.imread(file_path)
+
+        if frame is None:
+            print(f"警告: 跳过无法读取的图片: {png_file}")
+            continue
+
+        # 如果尺寸不匹配，调整大小
+        if frame.shape[1] != width or frame.shape[0] != height:
+            frame = cv2.resize(frame, size)
+
+        out.write(frame)
+
+    # 释放资源
+    out.release()
+    print(f"视频已保存至: {output_mp4}")
+    print(f"共处理 {len(png_files)} 张图片, 帧率: {fps}fps")
