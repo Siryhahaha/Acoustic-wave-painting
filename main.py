@@ -20,8 +20,7 @@ def play_audio():
 
 def update_bpsk_status():
     global isBPSK
-    isBPSK = 1 if bpsk_var.get() else 0  # 根据复选框状态更新isBPSK
-    print(f"BPSK状态已更新: {isBPSK}")
+    isBPSK = 1 if bpsk_var.get() else 0
 
 def select_save_dir():
     """选择保存目录"""
@@ -57,9 +56,10 @@ def execute_function():
     """执行功能"""
     global fps_set
     fps_set = frame_rate_var.get()
-    duration, num_spectra, interval =get_time_num_imterval(wavInput_path, fps=fps_set)
+    duration, num_spectra, interval, A_max =get_time_num_imterval(wavInput_path, fps=fps_set)
     for i in range(num_spectra + 1):
-        generate_png(wavInput_path, duration, interval, i, fps=fps_set)
+        generate_png(wavInput_path, duration, interval, i, fps=fps_set, A_max=A_max)
+        print(f"{(i/num_spectra)*100:.1f}%")
     png_mp4(fps=fps_set)
     mp4_addWav(mp4Silent_path, wavInput_path, mp4Output_path)
     messagebox.showinfo("完成", "功能执行完毕")
@@ -85,7 +85,7 @@ def update_display():
         except:
             display_label.config(text="说明图片加载失败")
 
-    elif disp_type == "BPSK调制解调图":
+    elif disp_type == "全时长频谱图":
         try:
             img_path = pngBpsk_path  # 确保此路径有效
             if not os.path.exists(img_path):
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     tk.Label(disp_frame, text="显示:").pack(side=tk.LEFT)
     display_type = tk.StringVar(value="说明")
     ttk.Combobox(disp_frame, textvariable=display_type,
-                values=["说明", "BPSK调制解调图", "解调后音频", "视频"], width=8, state="readonly"
+                values=["说明", "全时长频谱图", "解调后音频", "视频"], width=8, state="readonly"
                 ).pack(side=tk.LEFT)
     tk.Button(disp_frame, text="更新显示", command=update_display
              ).pack(side=tk.LEFT, padx=10)
@@ -193,8 +193,8 @@ if __name__ == "__main__":
     left_text.grid(row=0, column=0, sticky="w", padx=5)
     right_text = tk.Label(info_frame, text="当前时间："+time.strftime("%Y-%m-%d"), anchor="e")
     right_text.grid(row=0, column=1, sticky="e", padx=5)
-    info_frame.columnconfigure(0, weight=1)  # 左侧扩展
-    info_frame.columnconfigure(1, weight=1)  # 右侧扩展
+    info_frame.columnconfigure(0, weight=1)
+    info_frame.columnconfigure(1, weight=1)
 
     root.after(200, update_display)
     root.mainloop()

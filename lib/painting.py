@@ -15,8 +15,7 @@ def get_audio_duration(input_wav):
             if data.ndim > 1:
                 data = data.mean(axis=1)
             return len(data) / float(sample_rate)
-    except Exception as e:
-        print(f"error: {str(e)}")
+    except:
         return None
 
 
@@ -39,18 +38,15 @@ def calculate_global_amplitude_max(input_wav, nperseg, noverlap):
         )
         # 计算整个频谱的最大幅值
         global_max = np.max(np.abs(Zxx))
-        print(f"音频最大幅值: {global_max:.4f}")
         return global_max
     except Exception as e:
-        print(f"计算全局幅值时出错: {str(e)}")
-        return 1.0  # 返回安全的默认值
+        return 5000  # 返回安全的默认值
 
-def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512, dpi=150, fps=fps_set):
+def generate_single_spectrum(input_wav, target_time, fps=fps_set, A_max=5000):
     # 核心功能：分析音频在指定时间点的频谱特征
     #    fig: 包含频谱图的matplotlib图形对象
     #    freq: 频率数组（各频率点）
     #    spectrum: 幅度数组（各频率对应的声音强度）
-
     try:
         # === 1. 音频读取与预处理 ===
         with warnings.catch_warnings():
@@ -71,7 +67,10 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         closest_idx = np.argmin(time_diffs)
         spectrum = np.abs(Zxx[:, closest_idx])
         actual_time = t[closest_idx]
-        print(f"target: {target_time}s , actual: {actual_time:.3f}s")
+        # 核心修改：添加峰值标记和频率显示
+        peak_idx = np.argmax(spectrum)
+        peak_freq = f[peak_idx]
+        peak_amp = spectrum[peak_idx]
         # === 4. 创建频谱图表 ===
         fig = plt.figure(figsize=(10, 7), dpi=dpi)  # 增加高度到7英寸
         fig.subplots_adjust(hspace=5)
@@ -79,16 +78,18 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         ax.plot(f, spectrum, color='blue', linewidth=2)
         ax.set_xscale('log')
         ax.set_xlim(20, sample_rate / 2)
-        ax.set_ylim(0, calculate_global_amplitude_max(input_wav, nperseg, noverlap) * 1.1)
+        ax.set_ylim(0, A_max * 1.1)
         ax.set_xlabel('f (Hz)')
         ax.set_ylabel('A')
-        # ax.grid(True, which='both', linestyle='--', alpha=0.7)
+        ax.axvline(x=peak_freq, color='red', linestyle='--', alpha=0.7)
+        ax.plot(peak_freq, peak_amp, 'ro', markersize=6)
         ax.text(
             0.98, 0.98,
-            f't = {actual_time:.3f}s , fps = {fps}',
+            f't = {actual_time:.3f}s , fps = {fps}, \nmain = {peak_freq:.1f} Hz',
             transform=ax.transAxes,
             ha='right',
             va='top',
+            fontsize=10,
             bbox=dict(
                 boxstyle='round',
                 facecolor='white',
@@ -98,46 +99,35 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
 
         plt.tight_layout()
         return fig, f, spectrum
-    except Exception as e:
-        print(f"error: {str(e)}")
+    except:
         raise
 
 def get_time_num_imterval(wav_path=wavOutput_path, fps=fps_set):
     duration = get_audio_duration(wav_path)
     if duration is None:
-        print("error")
         exit(1)
-    print(f"total length: {duration:.2f} s")
     # 设置采样间隔
     interval = 1/fps
     # 计算需要生成的频谱图数量
     num_spectra = int(duration / interval)
-    return duration, num_spectra, interval
+    A_max=calculate_global_amplitude_max(wav_path, nperseg, noverlap)
+    return duration, num_spectra, interval, A_max
 
-def generate_png(input_wav, duration, interval, i, fps=fps_set):
-    # 循环生成频谱图
-    # for i in range(num_spectra + 1):
+def generate_png(input_wav, duration, interval, i, fps=fps_set, A_max=5000):
     target_time = i * interval
-    # 避免超出音频时长
     if target_time > duration:
         return
-        # 生成频谱图
     fig, freq, spectrum = generate_single_spectrum(
         input_wav,
         target_time=target_time,
-        nperseg=nperseg,
-        noverlap=noverlap,
-        dpi=dpi,
-        fps=fps
+        fps=fps,
+        A_max=A_max
     )
-    # 设置图表标题
     fig.suptitle(Path(input_wav).stem, fontsize=20)
-    fig.text(0.8, 0.01, "Acoustic-wave-painting  by SY MZH LHJ",
-             ha='center', fontsize=10,
+    fig.text(0.1, 0.01, "Acoustic-wave-painting  by SY MZH LHJ",
+             fontsize=10,
              bbox=dict(facecolor='white', alpha=0.7))
     file_name = f"{i + 1:05d}.png"
     full_path = pngTempDir_path + "\\" + file_name
     plt.savefig(full_path)
     plt.close('all')
-        # print(f"已保存: {output_img}")
-    # print(f"all {num_spectra} ")
