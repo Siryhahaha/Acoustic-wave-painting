@@ -35,6 +35,7 @@ mp4Output_path = "workspace\\mp4Output.mp4"
 isSave = 0
 isInputWav = 0
 isOriBin = 0
+isBPSK = 0
 #
 fps_set = 30
 def nothing():

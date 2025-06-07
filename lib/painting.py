@@ -102,8 +102,6 @@ def generate_single_spectrum(input_wav, target_time, nperseg=1024, noverlap=512,
         print(f"error: {str(e)}")
         raise
 
-#这里写一个函数，得到总数和采样间隔
-#这里写一个函数，输入数字得到对应时间的图片
 def get_time_num_imterval(wav_path=wavOutput_path, fps=fps_set):
     duration = get_audio_duration(wav_path)
     if duration is None:

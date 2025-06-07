@@ -18,6 +18,11 @@ def play_audio():
         return
     os.startfile(wavInput_path)
 
+def update_bpsk_status():
+    global isBPSK
+    isBPSK = 1 if bpsk_var.get() else 0  # 根据复选框状态更新isBPSK
+    print(f"BPSK状态已更新: {isBPSK}")
+
 def select_save_dir():
     """选择保存目录"""
     global saveDir_path
@@ -52,26 +57,12 @@ def execute_function():
     """执行功能"""
     global fps_set
     fps_set = frame_rate_var.get()
-    ###############################这里进行主要工作
     duration, num_spectra, interval =get_time_num_imterval(wavInput_path, fps=fps_set)
     for i in range(num_spectra + 1):
         generate_png(wavInput_path, duration, interval, i, fps=fps_set)
     png_mp4(fps=fps_set)
-    ############这里差一个添加音频
     mp4_addWav(mp4Silent_path, wavInput_path, mp4Output_path)
     messagebox.showinfo("完成", "功能执行完毕")
-
-
-from lib import *
-import os
-import time
-import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
-from PIL import Image, ImageTk
-import shutil
-
-
-# ... 其他函数保持不变 ...
 
 def update_display():
     """更新显示区域"""
@@ -134,12 +125,8 @@ if __name__ == "__main__":
     # 顶部栏
     top_frame = tk.Frame(root)
     top_frame.pack(fill=tk.X, padx=10, pady=5)
-
     tk.Label(top_frame, text="欢迎使用声波绘影系统",
              font=("微软雅黑", 12, "bold")).pack(side=tk.LEFT)
-
-    time_label = tk.Label(top_frame, text=time.strftime("%Y-%m-%d %H:%M:%S"))
-    time_label.pack(side=tk.RIGHT)
 
     # 主内容区域
     main_frame = tk.Frame(root)
@@ -148,7 +135,6 @@ if __name__ == "__main__":
     # 左侧控制面板
     left_frame = tk.LabelFrame(main_frame, text="控制")
     left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=5)
-
     # 文件操作区 (保持不变)
     tk.Label(left_frame, text="文件操作:").grid(row=0, column=0, sticky="w", pady=5)
     file_label = tk.Label(left_frame, text="未选择文件", width=15, anchor="w")
@@ -161,18 +147,13 @@ if __name__ == "__main__":
     tk.Label(left_frame, text="生成规则:", pady=5, anchor="w").grid(row=4, column=0, sticky="w", pady=(15, 0))
     rule_frame = tk.Frame(left_frame)
     rule_frame.grid(row=5, column=0, sticky="we", padx=5)
-
-    # 帧率选择
     tk.Label(rule_frame, text="帧率选择:").grid(row=0, column=0, sticky="w", padx=(0, 5))
     frame_rate_var = tk.IntVar(value=30)
     ttk.Combobox(rule_frame, textvariable=frame_rate_var,
                  values=[1, 5, 10, 20, 24, 30], width=4, state="readonly").grid(row=0, column=1, sticky="w")
-
-    # BPSK调制选择
     bpsk_var = tk.BooleanVar(value=False)
-    ttk.Checkbutton(rule_frame, text="BPSK调制", variable=bpsk_var).grid(row=1, column=0, columnspan=2, sticky="w",
-                                                                         pady=(5, 0))
-
+    bpsk_cb = ttk.Checkbutton(rule_frame, text="BPSK调制", variable=bpsk_var, command=update_bpsk_status
+        ).grid(row=1, column=0, columnspan=2, sticky="w", pady=(5, 0))
     # 保存操作区
     tk.Label(left_frame, text="保存操作:", pady=5).grid(row=6, column=0, sticky="w", pady=(15, 5))
     save_label = tk.Label(left_frame, text="未设置路径", width=15, anchor="w")
@@ -205,19 +186,16 @@ if __name__ == "__main__":
     # 功能按钮
     tk.Button(right_frame, text="绘影", command=execute_function,
               width=15).pack(pady=10)
-
     # 信息标签
-    info_label = tk.Label(right_frame, text="就绪", bd=1, relief=tk.SUNKEN,
-                         anchor="w", padx=5)
-    info_label.pack(fill=tk.X, pady=5)
+    info_frame = tk.Frame(right_frame, bd=1, relief=tk.SUNKEN)
+    info_frame.pack(fill=tk.X, pady=5)
+    left_text = tk.Label(info_frame, text="by 踹开那扇门 —— 孙艺 马梓豪 李昊峻", anchor="w")
+    left_text.grid(row=0, column=0, sticky="w", padx=5)
+    right_text = tk.Label(info_frame, text="当前时间："+time.strftime("%Y-%m-%d"), anchor="e")
+    right_text.grid(row=0, column=1, sticky="e", padx=5)
+    info_frame.columnconfigure(0, weight=1)  # 左侧扩展
+    info_frame.columnconfigure(1, weight=1)  # 右侧扩展
 
-    # 时间更新
-    def update_time():
-        time_label.config(text=time.strftime("%Y-%m-%d %H:%M:%S"))
-        root.after(1000, update_time)
-
-    # 初始显示
-    update_time()
     root.after(200, update_display)
     root.mainloop()
     dir_clear(pngTempDir_path)
