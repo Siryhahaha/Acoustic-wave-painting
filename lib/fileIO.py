@@ -62,50 +62,37 @@ def workspace_init():
 
 
 def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Silent_path, fps=fps_set):
-    """"""
-    # 验证文件夹存在
+    """将数张png图片按需要的帧率合并成为一个MP4视频"""
+    #保护作用
     if not os.path.exists(image_folder):
         raise FileNotFoundError(f"图片文件夹不存在: {image_folder}")
-
-    # 获取文件夹中所有PNG文件（自然排序）
+    #读取所有png，确定尺寸
     png_files = [f for f in os.listdir(image_folder) if f.lower().endswith('.png')]
     if not png_files:
         raise ValueError(f"文件夹中没有PNG图片: {image_folder}")
-
-    # 按自然顺序排序（考虑数字顺序）
     png_files = natsort.natsorted(png_files)
-
-    # 获取第一张图片的尺寸
     first_frame = cv2.imread(os.path.join(image_folder, png_files[0]))
     if first_frame is None:
         raise ValueError(f"无法读取第一帧图片: {png_files[0]}")
-
     height, width, _ = first_frame.shape
     size = (width, height)
 
-    # 创建视频写入对象
+    #开始写入
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # MP4编码器
     out = cv2.VideoWriter(output_mp4, fourcc, fps, size)
-
-    # 处理并写入每帧图片
     for png_file in png_files:
         file_path = os.path.join(image_folder, png_file)
         frame = cv2.imread(file_path)
-
         if frame is None:
             print(f"警告: 跳过无法读取的图片: {png_file}")
             continue
-
-        # 如果尺寸不匹配，调整大小
         if frame.shape[1] != width or frame.shape[0] != height:
             frame = cv2.resize(frame, size)
-
         out.write(frame)
 
-    # 释放资源
     out.release()
-    print(f"视频已保存至: {output_mp4}")
-    print(f"共处理 {len(png_files)} 张图片, 帧率: {fps}fps")
+    print(f"视频保存: {output_mp4}")
+    print(f"处理 {len(png_files)} 张图片, 帧率: {fps}fps")
 
 
 def mp4_addWav(mp4_path, wav_path, output_path):
