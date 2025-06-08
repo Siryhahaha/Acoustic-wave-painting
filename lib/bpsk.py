@@ -1,3 +1,0 @@
-from .constants import *
-
-#这里进行binOri_path转调制后binBpsk_path，还有一个binBpsk_path转binDebpsk_path，以及调制解调图片生成pngBpsk_path

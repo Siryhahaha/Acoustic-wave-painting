@@ -5,7 +5,7 @@ from .constants import *
 #文件的选择、文件夹的选择
 #wav的播放
 
-def wav_read_bin(wav_path=wavInput_path, bin_path=binOri_path):
+def wav_read_bin(wav_path=wavInput_path, bin_path=binInput_path):
     """读wav，wav-bin，返回rate和data"""
     rate, data = wav.read(wav_path)
     if data.ndim > 1:
@@ -14,13 +14,13 @@ def wav_read_bin(wav_path=wavInput_path, bin_path=binOri_path):
     data.tofile(bin_path)
     return rate, data
 
-def bin_read_wav(rate=44100, bin_path=binDebpsk_path, wav_path=wavOutput_path):
+def bin_read_wav(rate=44100, bin_path=binInput_path, wav_path=wavOutput_path):
     """读bin，bin-wav"""
     audio = np.fromfile(bin_path, dtype=np.float32)
     audio_int = (audio * 32767).astype(np.int16)
     wav.write(wav_path, rate, audio_int)
 
-def bin_write(data, bin_path=binBpsk_path):
+def bin_write(data, bin_path=binInput_path):
     data.tofile(bin_path)
 
 def png_read(png_path):
@@ -32,6 +32,9 @@ def png_write(png, png_path="pngTempDir_path\\0.png"):
 
 def dir_copy(DirInput_path, DirOutput_path):
     shutil.copytree(DirInput_path, DirOutput_path)
+
+def file_copy(fileInput_path, fileOutput_path):
+    shutil.copy(fileInput_path, fileOutput_path)
 
 def file_clear(file_path):
     """直接清空文件"""
@@ -49,13 +52,11 @@ def dir_clear(dir_path):
 
 def workspace_init():
     """清空所有本层文件，删除暂存过程png"""
-    file_clear(binOri_path)
-    file_clear(binBpsk_path)
-    file_clear(binDebpsk_path)
-    file_clear(pngBpsk_path)
+    file_clear(binOutput_path)
+    file_clear(pngTAF_path)
+    file_clear(wavOutput_path)
     file_clear(mp4Silent_path)
     file_clear(mp4Output_path)
-    file_clear(wavOutput_path)
     os.remove(mp4Output_path)
     dir_clear(pngTempDir_path)
 

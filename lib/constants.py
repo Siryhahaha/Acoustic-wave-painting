@@ -22,22 +22,24 @@ from scipy.signal import stft
 #路径
 saveDir_path = ""
 wavInput_path = ""
+binInput_path = ""
 wavOutput_path = "workspace\\wavOutput.wav"
-binOri_path = "workspace\\binOri.bin"
-binBpsk_path = "workspace\\binBpsk_path.bin"
-binDebpsk_path = "workspace\\binDebpsk.bin"
+binOutput_path = "workspace\\binOutput_path.bin"
 pngTempDir_path = "workspace\\pngTemp"
 pngOI_path = "使用说明.png"
-pngBpsk_path = "workspace\\pngBpsk.png"
+pngTAF_path = "workspace\\pngTAF.png"
 mp4Silent_path = "workspace\\mp4Silent.mp4"
 mp4Output_path = "workspace\\mp4Output.mp4"
-#
+
+#标志位
 isSave = 0
-isInputWav = 0
-isOriBin = 0
-isBPSK = 0
-#
+isInput = 0
+iswav = 1   #0为bin1为wav
+isylim = 0  #0为不变1为变
+ismp4 = 1
+
+#帧率
 fps_set = 30
+
 def nothing():
-    no = 1
-    no += 1
+    return 0
