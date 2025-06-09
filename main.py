@@ -127,7 +127,7 @@ def update_display():
         try:
             img_path = pngOI_path
             img = Image.open(img_path)
-            img = img.resize((450, 300), Image.LANCZOS)
+            img = img.resize((600, 400), Image.LANCZOS)
             photo0 = ImageTk.PhotoImage(img)
             display_label.config(image=photo0)
             display_label.image = photo0

@@ -76,7 +76,6 @@ def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Silent_path, fps=fps_set
         raise ValueError(f"无法读取第一帧图片: {png_files[0]}")
     height, width, _ = first_frame.shape
     size = (width, height)
-
     #开始写入
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # MP4编码器
     out = cv2.VideoWriter(output_mp4, fourcc, fps, size)
@@ -90,20 +89,21 @@ def png_mp4(image_folder=pngTempDir_path, output_mp4=mp4Silent_path, fps=fps_set
             frame = cv2.resize(frame, size)
         out.write(frame)
 
+
     out.release()
     print(f"视频保存: {output_mp4}")
     print(f"处理 {len(png_files)} 张图片, 帧率: {fps}fps")
 
 
 def mp4_addWav(mp4_path, wav_path, output_path):
-    """合并音视频（保留原视频编码）"""
+    """合并音视频"""
     cmd = [
         'ffmpeg',
-        '-i', mp4_path,  # 输入视频
-        '-i', wav_path,  # 输入音频
-        '-c:v', 'copy',  # 直接复制视频流（无损）
-        '-c:a', 'aac',  # 音频编码为 AAC
-        '-strict', 'experimental',  # 兼容性参数
+        '-i', mp4_path,  #输入MP4
+        '-i', wav_path,  #输入wav
+        '-c:v', 'copy',  #复制
+        '-c:a', 'aac',  #音频编码
+        '-strict', 'experimental',  #兼容
         output_path
     ]
-    subprocess.run(cmd, check=True)  # check=True 确保命令执行成功
+    subprocess.run(cmd, check=True)
